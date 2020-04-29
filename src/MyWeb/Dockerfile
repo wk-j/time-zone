@@ -1,16 +1,19 @@
-# FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine as build
 FROM mcr.microsoft.com/dotnet/core/sdk:5.0-alpine as build
 WORKDIR /app
 
-# copy csproj and restore
 COPY src/MyWeb/*.csproj src/MyWeb/MyWeb.csproj
 RUN  dotnet restore src/MyWeb
 
-# copy all files and build
 COPY src/MyWeb src/MyWeb
 RUN dotnet publish src/MyWeb -c Release -o out
+
+####
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:5.0-alpine as runtime
 WORKDIR /app
 COPY --from=build /app/out ./
+
+ENV TZ='Asia/Bangkok'
+RUN apk add --no-cache tzdata
+
 ENTRYPOINT [ "dotnet", "MyWeb.dll" ]
